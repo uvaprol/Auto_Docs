@@ -54,8 +54,11 @@ class App(customtkinter.CTk):
                 for n in self.name_checkboxes:
                     if n._variable.get() == 'on':
                         DM.format_and_make(d.cget('text'), self.name[n.cget('text')])
-                        n._variable.set('off')
-                d._variable.set('off')
+        for d in self.docs_checkboxes:
+            d._variable.set('off')
+        for n in self.name_checkboxes:
+            n._variable.set('off')
+
 
 
 
