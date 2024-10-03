@@ -26,23 +26,56 @@ def parse_excel_to_dict_list(filepath: str, sheet_name='Лист1') -> tuple:
             i['Кем выдан']         = i['Unnamed: 19']
             i['Код подразделения'] = i['Unnamed: 20']
             i['Адрес регистрации'] = i['Unnamed: 21']
+            i['Дата рождения'] = '.'.join(str(i['Дата рождения'])[:10].split('-')[-1::-1])
+            i['Дата договора'] = '.'.join(str(i['Дата договора'])[:10].split('-')[-1::-1])
+            i['Дата выдачи'] = '.'.join(str(i['Дата выдачи'])[:10].split('-')[-1::-1])
             del i['№ '], i['Паспорт'], i['Unnamed: 17'], i['Unnamed: 18'], i['Unnamed: 19'], i['Unnamed: 20'], i['Unnamed: 21']
             names[f] = i
     return names
 
 
-def format_and_make(doc: str, change_text: dict = {}) -> None:
+def format_and_make(doc: str, save_path: str, change_text: dict = {}) -> None:
     print('Run')
     d = docx.Document(doc)
+
+    styles = []
+    for paragraph in d.paragraphs:
+        styles.append(paragraph.style)
+
+
     for table in d.tables:
         for row in table.rows:
             for cell in row.cells:
                 for mark in change_text.keys():
-                    cell.text = cell.text.replace(f'<{mark}>', f'{change_text[mark]}')
+                    if mark in cell.text:
+                        for paragraph in cell.paragraphs:
+                            if '<' in paragraph.text and '>' in paragraph.text:
+                                key = False
+                                for run in paragraph.runs:
+                                    if run.text == '<':
+                                        run.text = run.text.replace('<', f'{change_text[mark]}')
+                                        key = True
+                                        continue
+                                    elif key and run.text.find('>') == -1:
+                                        run.text = ''
+                                    elif run.text.find('>') != -1:
+                                        run.text = run.text[:run.text.find('>')]
+                                        key = False
 
-    for i in d.paragraphs:
+    for paragraph in d.paragraphs:
         for mark in change_text.keys():
-            i.text = i.text.replace(f'<{mark}>', f'{change_text[mark]}')
-    d.save(f'{change_text["ФИО обучающегося"]} {doc[7:]}')
+            if mark in paragraph.text:
+                key = False
+                for run in paragraph.runs:
+                    if run.text == '<':
+                        run.text = run.text.replace('<', f'{change_text[mark]}')
+                        key = True
+                        continue
+                    elif key and run.text.find('>') == -1:
+                        run.text = ''
+                    elif run.text.find('>') != -1:
+                        run.text = run.text[:run.text.find('>')]
+                        key = False
+    d.save(f'{save_path}{change_text["ФИО обучающегося"]} {doc[7:]}')
     print("Done")
 
