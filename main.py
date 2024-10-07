@@ -1,6 +1,10 @@
 import customtkinter
 import Docs_maker as DM
+import os
 
+class SelectWindow(customtkinter.CTk):
+    def __init__(self):
+        super().__init__()
 
 class SetingsWindow(customtkinter.CTkToplevel):
     def __init__(self, *args, **kwargs):
@@ -74,10 +78,10 @@ class SetingsWindow(customtkinter.CTkToplevel):
         except:
             name = {}
 
-
         app.state('normal')
-        app.focus()
+        app.update_frames()
         self.destroy()
+
 
 class MyFrame(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
@@ -105,24 +109,38 @@ class App(customtkinter.CTk):
         self.Docs_frame.grid(row=1, column=1, padx=20, pady=20)
 
         self.name_checkboxes = []
-        self.row_index = 0
-        for i in name.keys():
-            self.name_checkboxes.append(customtkinter.CTkCheckBox(self.Name_frame, text=f'{i}',
-                                                             variable=customtkinter.StringVar(value="off"),
-                                                             onvalue="on", offvalue="off"))
-            self.name_checkboxes[self.row_index].pack(padx=20, pady=20, anchor="w")
-            self.row_index += 1
-
         self.docs_checkboxes = []
-        self.row_index = 0
-
-        for i in docs_name:
-            self.docs_checkboxes.append(
-                customtkinter.CTkCheckBox(self.Docs_frame, text=f'{i.name}',
-                                          variable=customtkinter.StringVar(value="off"),
-                                          onvalue="on", offvalue="off"))
-            self.docs_checkboxes[self.row_index].pack(padx=20, pady=20, anchor="w")
-            self.row_index += 1
+        self.select_all_name_button = customtkinter.CTkButton(self.Name_frame, text="Выбрать всё",
+                                                              command=self.select_all_name)
+        self.select_all_name_button.pack(padx=20, pady=20, anchor="n")
+        self.select_all_docs_button = customtkinter.CTkButton(self.Docs_frame, text="Выбрать всё",
+                                                              command=self.select_all_docs)
+        self.select_all_docs_button.pack(padx=20, pady=20, anchor="n")
+        self.update_frames()
+        # self.select_all_name_button = customtkinter.CTkButton(self.Name_frame, text="Выбрать всё", command=self.select_all_name)
+        # self.select_all_name_button.pack(padx=20, pady=20, anchor="n")
+        #
+        # self.name_checkboxes = []
+        # self.row_index = 0
+        # for i in name.keys():
+        #     self.name_checkboxes.append(customtkinter.CTkCheckBox(self.Name_frame, text=f'{i}',
+        #                                                      variable=customtkinter.StringVar(value="off"),
+        #                                                      onvalue="on", offvalue="off"))
+        #     self.name_checkboxes[self.row_index].pack(padx=20, pady=20, anchor="w")
+        #     self.row_index += 1
+        #
+        # self.select_all_docs_button = customtkinter.CTkButton(self.Docs_frame, text="Выбрать всё", command=self.select_all_docs)
+        # self.select_all_docs_button.pack(padx=20, pady=20, anchor="n")
+        #
+        # self.docs_checkboxes = []
+        # self.row_index = 0
+        # for i in docs_name:
+        #     self.docs_checkboxes.append(
+        #         customtkinter.CTkCheckBox(self.Docs_frame, text=f'{i.name}',
+        #                                   variable=customtkinter.StringVar(value="off"),
+        #                                   onvalue="on", offvalue="off"))
+        #     self.docs_checkboxes[self.row_index].pack(padx=20, pady=20, anchor="w")
+        #     self.row_index += 1
 
 
         self.create_button = customtkinter.CTkButton(self, text="Создать", command=self.create_button_event)
@@ -132,6 +150,26 @@ class App(customtkinter.CTk):
         self.seting_button.grid(row=2, column=0, padx=20, pady=20)
 
     # add methods to app
+    def select_all_name(self):
+        if self.select_all_name_button.cget('text') == 'Выбрать всё':
+            self.select_all_name_button.configure(text="Отменить выбор")
+        else:
+            self.select_all_name_button.configure(text="Выбрать всё")
+        for n in self.name_checkboxes:
+            if n._variable.get() == 'on' and self.select_all_name_button.cget('text') == 'Выбрать всё':
+                n._variable.set('off')
+            elif self.select_all_name_button.cget('text') != 'Выбрать всё':
+                n._variable.set('on')
+    def select_all_docs(self):
+        if self.select_all_docs_button.cget('text') == 'Выбрать всё':
+            self.select_all_docs_button.configure(text="Отменить выбор")
+        else:
+            self.select_all_docs_button.configure(text="Выбрать всё")
+        for d in self.docs_checkboxes:
+            if d._variable.get() == 'on' and self.select_all_docs_button.cget('text') == 'Выбрать всё':
+                d._variable.set('off')
+            elif self.select_all_docs_button.cget('text') != 'Выбрать всё':
+                d._variable.set('on')
     def create_button_event(self):
         global name
         for d in self.docs_checkboxes:
@@ -152,6 +190,32 @@ class App(customtkinter.CTk):
         except:
             self.seting_window = SetingsWindow(self)
             self.withdraw()
+
+    def update_frames(self):
+        self.focus()
+        for n in self.name_checkboxes:
+            n.destroy()
+        for d in self.docs_checkboxes:
+            d.destroy()
+        self.name_checkboxes = []
+        self.docs_checkboxes = []
+
+        self.row_index = 0
+        for i in name.keys():
+            self.name_checkboxes.append(customtkinter.CTkCheckBox(self.Name_frame, text=f'{i}',
+                                                             variable=customtkinter.StringVar(value="off"),
+                                                             onvalue="on", offvalue="off"))
+            self.name_checkboxes[self.row_index].pack(padx=20, pady=20, anchor="w")
+            self.row_index += 1
+
+        self.row_index = 0
+        for i in docs_name:
+            self.docs_checkboxes.append(
+                customtkinter.CTkCheckBox(self.Docs_frame, text=f'{i.name}',
+                                          variable=customtkinter.StringVar(value="off"),
+                                          onvalue="on", offvalue="off"))
+            self.docs_checkboxes[self.row_index].pack(padx=20, pady=20, anchor="w")
+            self.row_index += 1
 
 
 
